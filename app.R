@@ -33,39 +33,70 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
     answers <- list()
-    output$stimuli <- renderPrint({"INSTRUCTIONS"})
-    
-    
-    tohide2 <- reactiveTimer(intervalMs = 7000)
-    params <- reactiveValues(counter = 0)
+    EventTime <- reactiveVal(Sys.time())
     
     observeEvent(input$nex,{
-        params$counter <- 0
-        output$ansbox <- NULL
-        output$stimuli <- renderPrint({rand_df[input$nex]})
-        print("next")
-        answers[[input$nex]] <<- input$ans
-        output$allans <- renderPrint({answers})
-        
-        tohide <<<- reactiveTimer(intervalMs = 6000)
+        EventTime(Sys.time() + 2)
     })
     
-    observeEvent(tohide(),
-                 {
-                     print(params$counter)
-                     if(input$nex != 0){
-                         output$stimuli <- renderPrint({"HIDDEN"})
-                         if(params$counter == 0){
-                             output$ansbox <- renderUI({
-                                 numericInput("ans", label = h3("Answer"), value = 0)})
-                         }
-                     }})
+    output$stimuli <- renderPrint({
+        timeLeft <<- round(difftime(EventTime(), Sys.time(), units = 'secs'))
+        if(timeLeft > 0){
+            invalidateLater(1000)
+            rand_df[input$nex]
+        } else {
+            if(input$nex != 0){
+                "HIDDEN"
+            }
+        }
+    })
     
-    observeEvent(tohide2(),{
-        print("updating params")
-        print(tohide2())
-        params$counter <- params$counter + 1
-        params$counter <- ifelse(params$counter > 0, 1, 0)})
+    output$ansbox <- renderUI({
+        timeLeft <<- round(difftime(EventTime(), Sys.time(), units = 'secs')) + 1
+        if(timeLeft > 0){
+            invalidateLater(1000)
+        } else {
+            if(input$nex != 0){
+                textInput("ans", label = h3("Answer"), value = 0)
+            }
+        }
+    })
+    
+    
+    observeEvent(input$nex,{
+        myindex <- ifelse((input$nex - 1) < 1, 1, input$nex - 1)
+        answers[[myindex]] <<- input$ans
+        output$allans <- renderPrint({answers})  
+    })
+    
+    
+    
+    # observeEvent(input$nex,{
+    #     print("next")
+    #     timeLeft <- round(difftime(EventTime(), Sys.time(), units='secs'))
+    #     print(timeLeft)
+    #     if(timeLeft > 0){
+    #         print("invalidating")
+    #         invalidateLater(500)
+    #         output$ansbox <- NULL
+    #         output$stimuli <- renderPrint({rand_df[input$nex]})
+    #         answers[[input$nex]] <<- input$ans
+    #         output$allans <- renderPrint({answers})
+    #     } else {
+    #         if(input$nex != 0){
+    #             output$stimuli <- renderPrint({"HIDDEN"})
+    #             if(params$counter == 0){
+    #                 output$ansbox <- renderUI({
+    #                     numericInput("ans", label = h3("Answer"), value = 0)})
+    #             }
+    #     }}})
+
+    
+    # observeEvent(tohide2(),{
+    #     print("updating params")
+    #     print(tohide2)
+    #     params$counter <- params$counter + 1
+    #     params$counter <- ifelse(params$counter > 0, 1, 0)})
     
     
 }
