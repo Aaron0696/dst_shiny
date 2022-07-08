@@ -51,8 +51,8 @@ ui <- fluidPage(
     fluidRow(column(5, uiOutput("nex"))),
     br(),
     # stimuli presentation
-    fluidRow(column(10, verbatimTextOutput("stimuli"))),
-    fluidRow(column(10, uiOutput("ansbox"))),
+    fluidRow(column(8, verbatimTextOutput("stimuli"))),
+    fluidRow(column(8, uiOutput("ansbox"))),
     br(),
     # uiOutput("ansbox"),
     fluidRow(column(3, verbatimTextOutput("score"))),
