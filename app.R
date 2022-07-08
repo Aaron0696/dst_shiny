@@ -2,10 +2,10 @@ library(shiny)
 library(shinythemes)
 
 # create [x] sequences of number starting from length 1 to [x]
-num_seq <- 12
+num_seq <- 11
 set.seed(Sys.time())
 rand_df <- c()
-for(l in 2:(num_seq + 1)){
+for(l in 3:(num_seq + 1)){
    rand_df <-  c(rand_df, 
                  paste0(round(runif(l, min = 0, max = 9)),
                  collapse = " "))
