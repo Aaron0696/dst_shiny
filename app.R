@@ -71,13 +71,13 @@ server <- function(input, output) {
     # timer logic, give 6s before hiding stimuli
     observeEvent(input$nex,{
         # give 3 seconds for easier sequences, and 6 for harder ones
-        EventTime(Sys.time() + ifelse(input$nex > 4, 6, 3))
+        EventTime(Sys.time() + ifelse(input$nex > 4, 7, 3))
     })
     
     # stimuli
     output$stimuli <- renderPrint({
         timeLeft <<- round(difftime(EventTime(), Sys.time(), units = 'secs'))
-        if(ifelse(is.null(input$nex), -1, input$nex) == (num_seq + 1)){
+        if(ifelse(is.null(input$nex), -1, input$nex) == (length(rand_df) + 1)){
             "END OF TASK"
         } else {
             # if there is still time left, show the sequence
@@ -93,7 +93,7 @@ server <- function(input, output) {
         })
     # box for inputting answers
     output$ansbox <- renderUI({
-        if(ifelse(is.null(input$nex), -1, input$nex) == (num_seq + 1)){
+        if(ifelse(is.null(input$nex), -1, input$nex) == (length(rand_df) + 1)){
             output$ans <- NULL
         } else {
             timeLeft <<- round(difftime(EventTime(), Sys.time(), units = 'secs')) + 2
@@ -121,7 +121,7 @@ server <- function(input, output) {
     # calculating score
     observeEvent(input$nex, {
         # when final button is pressed
-        if(input$nex == (num_seq + 1)){
+        if(input$nex == (length(rand_df) + 1)){
             # disable button
             output$nex <- renderUI({actionButton("does_nothing", label = "End")})
             # compute score
@@ -132,7 +132,7 @@ server <- function(input, output) {
             output$score <- renderPrint({paste0("Your score is ",
                                                 score,
                                                 " out of ",
-                                                num_seq,
+                                                length(rand_df),
                                                 ".")})
             output$moreinfo <- renderPrint({
                 data.frame(Your_Answer = answers_unlist,
