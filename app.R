@@ -3,6 +3,7 @@ library(shinythemes)
 
 # create [x] sequences of number starting from length 1 to [x]
 num_seq <- 12
+set.seed(Sys.time())
 rand_df <- c()
 for(l in 2:(num_seq + 1)){
    rand_df <-  c(rand_df, 
@@ -15,16 +16,14 @@ ui <- fluidPage(
     # select theme
     theme = shinytheme("flatly"),
     # title
-    titlePanel(h1("Forward Digit Span Task (Shiny Version)")),
+    titlePanel(h1("Forward Digit Span Task (FDST)")),
     # spiel
     fluidRow(
         column(
-            wellPanel(h3("Instructions"),
-                      "Welcome to the Forward Digit Span Task (FDST) :)",
+            wellPanel(h3("Please do not click next without reading the instructions!"),
+                      "The FDST was designed to measure working memory spans in the field of Cognitive Psychology.", 
                       br(),
-                      "The FDST was designed to measure working memory in the field of Cognitive Psychology", 
-                      br(),
-                      "I translated the task into an R Shiny app for fun",
+                      "I translated the task into an R Shiny app for fun, please do not use this for any rigourous assessments or purposes.",
                       br(),
                       br(),
                       "Below are the instructions for the task:",
@@ -32,25 +31,32 @@ ui <- fluidPage(
                 tags$ul(
                     tags$li("Do not click 'Next' until you are ready to begin"), 
                     tags$li("A sequence of numbers will be presented in the window below"),
-                    tags$li("Your job is to memorize the sequence of numbers before they disappear in 6 seconds"),
-                    tags$li("When the numbers become hidden, an input box will appear after another 2 seconds, where you must input the sequence of numbers as you recalled it"),
+                    tags$li("Your job is to memorize the sequence of numbers before they disappear in ~6 seconds"),
+                    tags$li("When the numbers become hidden, an input box will appear after another ~2 seconds, where you must input the sequence of numbers as you recalled it"),
                     tags$li("You do not need to input any space or separators between numbers in your input"),
-                    tags$li("You will receive a point for each sequence you recall correctly")
+                    tags$li("Click on 'Next' to submit your answer and receive the next sequence"),
+                    tags$li("You will receive a point for each sequence recalled correctly"),
+                    tags$li("The sequence will progressively get longer, up to 12 numbers!")
                 ),
                 "For example, if the sequence shown is '0 1 2 3', you can respond with '0123' or '0 1 2 3'",
                 br(),
-                "Click on 'Next' when you are ready to begin"), 
-            width = 8)),
+                "Click on 'Next' only when you are ready to begin"), 
+            width = 8),
+        column(
+            wellPanel("Access the README and codes on ", tags$a(href = "https://github.com/Aaron0696/dst_shiny", "Github."),
+                      br(),
+                      "Connect with me on ", tags$a(href = "https://www.linkedin.com/in/aaron-lim-b30898135/", "LinkedIn.")),
+            width = 4)),
     # next button
     fluidRow(column(5, uiOutput("nex"))),
     br(),
     # stimuli presentation
-    fluidRow(column(5, verbatimTextOutput("stimuli"))),
-    fluidRow(column(5, uiOutput("ansbox"))),
+    fluidRow(column(10, verbatimTextOutput("stimuli"))),
+    fluidRow(column(10, uiOutput("ansbox"))),
     br(),
     # uiOutput("ansbox"),
-    fluidRow(column(5, verbatimTextOutput("score"))),
-    fluidRow(column(5, verbatimTextOutput("moreinfo"))),
+    fluidRow(column(3, verbatimTextOutput("score"))),
+    fluidRow(column(3, verbatimTextOutput("moreinfo"))),
     br()
 )
 
@@ -64,8 +70,10 @@ server <- function(input, output) {
     output$nex <- renderUI({actionButton("nex", label = "Next")})
     # timer logic, give 6s before hiding stimuli
     observeEvent(input$nex,{
-        EventTime(Sys.time() + 6)
+        # give 3 seconds for easier sequences, and 6 for harder ones
+        EventTime(Sys.time() + ifelse(input$nex > 4, 6, 3))
     })
+    
     # stimuli
     output$stimuli <- renderPrint({
         timeLeft <<- round(difftime(EventTime(), Sys.time(), units = 'secs'))
@@ -77,13 +85,13 @@ server <- function(input, output) {
                 invalidateLater(1000)
                 rand_df[input$nex]   
             } else { # else hide it
-                if(ifelse(is.null(input$nex), -1, input$nex) != 0){
-                    "### THE SEQUENCE HAS BEEN HIDDEN ####"
-                }
+                if(ifelse(is.null(input$nex), -1, input$nex) == 0){
+                    "Sequences will appear here!"
+                } else {"### THE SEQUENCE HAS BEEN HIDDEN ####"}
             }
         }
         })
-    # box for inputting answesrs
+    # box for inputting answers
     output$ansbox <- renderUI({
         if(ifelse(is.null(input$nex), -1, input$nex) == (num_seq + 1)){
             output$ans <- NULL
